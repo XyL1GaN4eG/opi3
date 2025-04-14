@@ -8,6 +8,11 @@
     <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
     <property name="lib.dir" value="lib"/>
 
+    <property name="test.src.dir" value="src/main/tests"/>
+    <property name="test.build.dir" value="build/test-classes"/>
+    <property name="test.reports.dir" value="build/test-reports"/>
+
+
     <!-- 2. Автозагрузка Ivy -->
     <target name="download-ivy" unless="offline">
         <mkdir dir="${ivy.jar.dir}"/>
@@ -59,11 +64,37 @@
         </jar>
     </target>
 
+    <target name="compile-tests" depends="compile">
+        <mkdir dir="${test.build.dir}"/>
+        <javac
+                srcdir="${test.src.dir}"
+                destdir="${test.build.dir}"
+                includeantruntime="false">
+            <classpath>
+                <fileset dir="${lib.dir}" includes="**/*.jar"/>
+                <pathelement path="build/classes"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="test" depends="compile-tests">
+        <mkdir dir="build/test-reports"/>
+        <junit printsummary="yes" haltonfailure="yes">
+            <classpath>
+                <pathelement path="${test.build.dir}"/>
+                <pathelement path="build/classes"/>
+                <fileset dir="${lib.dir}" includes="**/*.jar"/>
+            </classpath>
+            <formatter type="plain"/>
+            <test name="space.nerfthis.data.GeometryValidatorTest"
+                  todir="build/test-reports"/>
+        </junit>
+    </target>
+
     <target name="run-all" depends="build">
         <echo>DONE</echo>
     </target>
 
-    <!-- 6. Очистка -->
     <target name="clean">
         <delete dir="build"/>
     </target>
