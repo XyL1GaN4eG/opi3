@@ -262,3 +262,5 @@ gradlew
 gradlew.bat
 gradle.xml
 .idea
+
+.env
