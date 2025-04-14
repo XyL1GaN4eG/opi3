@@ -1,16 +1,60 @@
 <?xml version="1.0"?>
-<project name="HelloWorld" default="run-all">
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="HelloWorld" default="run-all">
+
+    <!-- 1. Настройка Ivy -->
+    <property name="ivy.install.version" value="2.5.1"/>
+    <property name="ivy.home" value="${user.home}/.ant"/>
+    <property name="ivy.jar.dir" value="${ivy.home}/lib"/>
+    <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
+    <property name="lib.dir" value="lib"/>  <!-- Папка для зависимостей -->
+
+    <!-- 2. Автозагрузка Ivy -->
+    <target name="download-ivy" unless="offline">
+        <mkdir dir="${ivy.jar.dir}"/>
+        <get src="https://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
+             dest="${ivy.jar.file}"
+             skipexisting="true"/>
+    </target>
+
+    <!-- 3. Инициализация Ivy -->
+    <target name="init-ivy" depends="download-ivy">
+        <path id="ivy.lib.path">
+            <pathelement location="${ivy.jar.file}"/>
+        </path>
+        <taskdef resource="org/apache/ivy/ant/antlib.xml"
+                 uri="antlib:org.apache.ivy.ant"
+                 classpathref="ivy.lib.path"/>
+    </target>
+
+    <!-- 4. Загрузка зависимостей -->
+    <target name="resolve" depends="init-ivy">
+        <ivy:resolve/>
+        <ivy:retrieve pattern="${lib.dir}/[artifact]-[revision](-[classifier]).[ext]"/>
+    </target>
+
+    <!-- 5. Ваши цели -->
     <target name="hello">
         <echo>Hello, World!</echo>
     </target>
-    <target name="compile" depends="hello">
+
+    <target name="compile" depends="hello, resolve">
         <mkdir dir="build/classes"/>
         <javac destdir="build/classes" includeantruntime="false">
             <src path="src"/>
+            <!-- Добавляем зависимости в classpath -->
+            <classpath>
+                <fileset dir="${lib.dir}" includes="**/*.jar"/>
+            </classpath>
         </javac>
     </target>
 
     <target name="run-all" depends="compile">
         <echo>DONE</echo>
+    </target>
+
+    <!-- 6. Очистка -->
+    <target name="clean">
+        <delete dir="build"/>
+        <delete dir="${lib.dir}"/>
     </target>
 </project>
