@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<project xmlns:ivy="antlib:org.apache.ivy.ant" name="web-lab3" default="run-all">
+
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="web-lab3" default="run-all" basedir=".">
     <property file=".env"/>
 
     <!-- Setup directories -->
@@ -63,6 +64,7 @@
                 <include name="**/*.xhtml"/>
             </fileset>
         </checksum>
+        
 
         <checksum algorithm="SHA-1" forceOverwrite="yes" todir="${checksums.dir}">
             <fileset dir="${src.dir}">
@@ -94,6 +96,41 @@
             <fileset dir="${checksums.dir}"/>
         </zip>
     </target>
+
+    <target name="xml">
+    <echo message="Validating XML files..."/>
+    
+    <xmlvalidate 
+      lenient="false"
+      failonerror="false"
+      warn="true">
+
+    <fileset dir="${basedir}">
+        <include name="**/*.xml"/>
+        <exclude name="build/**"/>
+      </fileset>
+    </xmlvalidate>
+    
+    <echo message="XML validation completed successfully!"/>
+</target>
+
+
+<target name="set-env">
+    <propertycopy name="current.java.home" from="java.${java.version}.home"/>
+    <propertycopy name="current.jvm.args" from="jvm.${java.version}.args"/>
+    
+    <echo message="Using Java: ${current.java.home}"/>
+    <echo message="JVM args: ${current.jvm.args}"/>
+  </target>
+
+  <target name="compile">
+    <javac 
+      srcdir="src"
+      destdir="build/classes"
+      fork="true"
+      executable="${current.java.home}/bin/javac"
+      includeantruntime="false"/>
+  </target>
 
     <!-- Resolve dependencies -->
     <target name="resolve" depends="init-ivy, init">
