@@ -7,10 +7,12 @@
     <property name="web.dir" value="src/main/webapp"/>
     <property name="build.dir" value="build"/>
     <property name="classes.dir" value="${build.dir}/classes"/>
-    <property name="dist.dir" value="dist"/>
     <property name="javadoc.dir" value="${build.dir}/javadoc"/>
     <property name="checksums.dir" value="${build.dir}/checksums"/>
     <property name="jar.file" value="${dist.dir}/${ant.project.name}.jar"/>
+    
+
+    <property name="manifest.file" value="${build.dir}/MANIFEST.MF"/>
 
     <!-- Setup test directories -->
     <property name="test.src.dir" value="src/main/tests"/>
@@ -28,7 +30,6 @@
     <target name="init">
         <mkdir dir="${build.dir}"/>
         <mkdir dir="${classes.dir}"/>
-        <mkdir dir="${dist.dir}"/>
         <mkdir dir="${javadoc.dir}"/>
         <mkdir dir="${checksums.dir}"/>
     </target> 
@@ -53,8 +54,49 @@
                  classpathref="ivy.lib.path"/>
     </target>
 
+    <target name="doc" depends="compile">
+        <!-- Hash generation -->
+        
+        <checksum algorithm="MD5" forceOverwrite="yes" todir="${checksums.dir}">
+            <fileset dir="${src.dir}">
+                <include name="**/*.java"/>
+                <include name="**/*.xhtml"/>
+            </fileset>
+        </checksum>
+
+        <checksum algorithm="SHA-1" forceOverwrite="yes" todir="${checksums.dir}">
+            <fileset dir="${src.dir}">
+                <include name="**/*.java"/>
+                <include name="**/*.xhtml"/>
+            </fileset>
+        </checksum>
+ 
+
+        <!-- Javadoc generation -->
+        <javadoc destdir="${javadoc.dir}" failonerror="false">
+            <classpath>
+                <fileset dir="${lib.dir}" includes="**/*.jar"/>
+            </classpath>
+            <fileset dir="${src.dir}">
+                <include name="**/*.java"/>
+            </fileset>
+        </javadoc>
+
+        <!-- Creating manifest file with hashes -->
+        <manifest file="${manifest.file}">
+            <attribute name="Generated-By" value="Apache Ant"/>
+            <attribute name="Checksums" value="${checksums.dir}"/>
+        </manifest>
+
+        <!-- Build doc -->
+        <zip destfile="${javadoc.dir}/project-docs.zip">
+            <fileset dir="${javadoc.dir}"/>
+            <fileset dir="${checksums.dir}"/>
+        </zip>
+    </target>
+
     <!-- Resolve dependencies -->
-    <target name="resolve" depends="init-ivy">
+    <target name="resolve" depends="init-ivy, init">
         <ivy:resolve/>
         <ivy:retrieve pattern="${lib.dir}/[artifact]-[revision](-[classifier]).[ext]"/>
     </target>
@@ -72,13 +114,15 @@
     </target>
 
     <!-- Build project -->
-    <target name="build" depends="resolve, generate-javadoc">
+    <target name="build" depends="resolve, doc">
         <antcall target="compile"/>
         <path id="cls.path">
             <fileset dir="lib" includes="**/*.jar"/>
             <pathelement location="build/classes/space/nerfthis/data"/>
         </path>
         <jar destfile="${build.dir}/${ant.project.name}.jar" basedir="build/classes/space/nerfthis/data" manifest="${build.dir}/MANIFEST.MF">
+            <zipfileset dir="${checksums.dir}" prefix="META-INF/checksums"/>
+            <zipfileset dir="${javadoc.dir}" prefix="docs"/>
             <manifest>
                 <attribute name="Class-Path" value="${cls.path}"/>
             </manifest>
@@ -138,13 +182,7 @@ it should have been done through scp,
         </exec>
     </target>
 
-    <target name="generate-javadoc" depends="compile">
-        <javadoc destdir="${javadoc.dir}" classpathref="lib.path">
-            <fileset dir="${src.dir}">
-                <include name="**/*.java"/>
-            </fileset>
-        </javadoc>
-    </target>
+    
 
     <target name="run-all" depends="build">
         <echo>DONE</echo>
