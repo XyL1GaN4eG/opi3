@@ -1,9 +1,5 @@
 <?xml version="1.0"?>
-<<<<<<< HEAD
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="web-lab3" default="run-all">
-=======
-<project xmlns:ivy="antlib:org.apache.ivy.ant" name="opi.3" default="run-all">
->>>>>>> 96e5007235b681a6f62dc4c21314c03fa24f5976
 
     <!-- 1. Настройка Ivy -->
     <property name="ivy.install.version" value="2.5.1"/>
