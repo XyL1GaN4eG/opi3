@@ -1,5 +1,11 @@
 <?xml version="1.0"?>
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="web-lab3" default="run-all">
+    <property file=".env"/>
+
+    <!-- Настройка директорий для тестов -->
+    <property name="test.src.dir" value="src/main/tests"/>
+    <property name="test.build.dir" value="build/test-classes"/>
+    <property name="test.reports.dir" value="build/test-reports"/>
 
     <!-- 1. Настройка Ivy -->
     <property name="ivy.install.version" value="2.5.1"/>
@@ -8,9 +14,6 @@
     <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
     <property name="lib.dir" value="lib"/>
 
-    <property name="test.src.dir" value="src/main/tests"/>
-    <property name="test.build.dir" value="build/test-classes"/>
-    <property name="test.reports.dir" value="build/test-reports"/>
 
 
     <!-- 2. Автозагрузка Ivy -->
@@ -89,6 +92,30 @@
             <test name="space.nerfthis.data.GeometryValidatorTest"
                   todir="build/test-reports"/>
         </junit>
+    </target>
+
+<!--    according to the terms of reference,
+it should have been done through scp,
+ but scp does not accept a password,
+ so let this target be implemented through sshpass for now-->
+<!--    <target name="scp" depends="build">-->
+<!--        <exec executable="scp">-->
+<!--            <arg value="-P"/>-->
+<!--            <arg value="${PORT}"/>-->
+<!--            <arg value="build/${ant.project.name}.jar"/>-->
+<!--            <arg value="${USER}@${SERVER}:lol"/>-->
+<!--        </exec>-->
+<!--    </target>-->
+
+    <target name="scp" depends="build">
+        <exec executable="sshpass">
+            <arg value="-p${PASSWORD}"/>
+            <arg value="scp"/>
+            <arg value="-P"/>
+            <arg value="${PORT}"/>
+            <arg value="build/${ant.project.name}.jar"/>
+            <arg value="${USER}@${SERVER}:~/path"/> <!-- change path -->
+        </exec>
     </target>
 
     <target name="run-all" depends="build">
