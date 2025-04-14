@@ -1,6 +1,16 @@
 <?xml version="1.0"?>
-<project name="HelloWorld" default="hello">
+<project name="HelloWorld" default="run-all">
     <target name="hello">
         <echo>Hello, World!</echo>
+    </target>
+    <target name="compile" depends="hello">
+        <mkdir dir="build/classes"/>
+        <javac destdir="build/classes" includeantruntime="false">
+            <src path="src"/>
+        </javac>
+    </target>
+
+    <target name="run-all" depends="compile">
+        <echo>DONE</echo>
     </target>
 </project>
