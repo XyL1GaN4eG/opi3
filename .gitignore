@@ -260,3 +260,4 @@ bin/
 gradle
 gradlew
 gradlew.bat
+gradle.xml
