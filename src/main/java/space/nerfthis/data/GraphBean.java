@@ -1,77 +1,108 @@
 package space.nerfthis.data;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * Managed bean for handling graph-related operations and user input in a JSF
+ * application. Maintains session-scoped state for coordinate parameters (X, Y,
+ * R) and point data. Integrates with database operations through DataBaseBean
+ * and provides JSON representation of points.
+ *
+ * <p>Coordinates and radius values are captured from user input and used to
+ * calculate/display points on a graph. Automatically initializes with default
+ * radius value (R=1.0).</p>
+ */
 @ManagedBean
 @SessionScoped
 public class GraphBean {
-    private Double x;
-    private Double y;
-    private Double r;
-    private List<Point> points = new ArrayList<>();
-    private String pointsJson = "";
-    @Inject
-    private DataBaseBean dataBaseBean;
+  private Double x;
+  private Double y;
+  private Double r;
+  private List<Point> points = new ArrayList<>();
+  private String pointsJson = "";
+  @Inject private DataBaseBean dataBaseBean;
 
-    @PostConstruct
-    public void init() {
-        dataBaseBean.getAllPoints();
-        points = dataBaseBean.getPoints();
-        pointsJson = JSONBuilder.buildJson(points);
-        r = 1.0;
-    }
+  /**
+   * Initializes bean after dependency injection.
+   * Loads existing points from database and converts them to JSON format.
+   * Sets default radius value (R=1.0).
+   */
+  @PostConstruct
+  public void init() {
+    dataBaseBean.getAllPoints();
+    points = dataBaseBean.getPoints();
+    pointsJson = JSONBuilder.buildJson(points);
+    r = 1.0;
+  }
 
-    public Double getX() {
-        return x;
-    }
+  /**
+   * @return current X coordinate value
+   */
+  public Double getX() { return x; }
 
-    public void setX(Double x) {
-        this.x = x;
-    }
+  /**
+   * @param x new X coordinate value to set
+   */
+  public void setX(Double x) { this.x = x; }
 
-    public Double getY() {
-        return y;
-    }
+  /**
+   * @return current Y coordinate value
+   */
+  public Double getY() { return y; }
 
-    public void setY(Double y) {
-        this.y = y;
-    }
+  /**
+   * @param y new Y coordinate value to set
+   */
+  public void setY(Double y) { this.y = y; }
 
-    public Double getR() {
-        return r;
-    }
+  /**
+   * @return current radius (R) value
+   */
+  public Double getR() { return r; }
 
-    public void setR(Double r) {
-        this.r = r;
-    }
+  /**
+   * @param r new radius (R) value to set
+   */
+  public void setR(Double r) { this.r = r; }
 
-    public List<Point> getPoints() {
-        return points;
-    }
+  /**
+   * @return list of stored Point objects
+   */
+  public List<Point> getPoints() { return points; }
 
-    public String getPointsJson() {
-        return pointsJson;
-    }
+  /**
+   * @return JSON representation of points for frontend visualization
+   */
+  public String getPointsJson() { return pointsJson; }
 
-    public void setPointsJson(String pointsJson) {
-        this.pointsJson = pointsJson;
-    }
+  /**
+   * @param pointsJson JSON string to set (typically not used directly)
+   */
+  public void setPointsJson(String pointsJson) { this.pointsJson = pointsJson; }
 
-    public void addPoint() {
-        if (x != null && y != null && r != null) {
-            Point newPoint = new Point(x, y, r, GeometryValidator.isInsideArea(x, y, r));
-            points.add(newPoint);
-            dataBaseBean.addPoint(newPoint);
-            pointsJson = JSONBuilder.buildJson(points);
-        }
+  /**
+   * Creates and stores a new Point based on current X/Y/R values.
+   * Performs validation through GeometryValidator and persists to database.
+   * Updates JSON representation after adding new point.
+   */
+  public void addPoint() {
+    if (x != null && y != null && r != null) {
+      Point newPoint =
+          new Point(x, y, r, GeometryValidator.isInsideArea(x, y, r));
+      points.add(newPoint);
+      dataBaseBean.addPoint(newPoint);
+      pointsJson = JSONBuilder.buildJson(points);
     }
+  }
 
-    public boolean isFormValid() {
-        return x != null && y != null && r != null;
-    }
+  /**
+   * Validates if all required form fields (X/Y/R) have values
+   * @return true if all coordinate parameters are set, false otherwise
+   */
+  public boolean isFormValid() { return x != null && y != null && r != null; }
 }
