@@ -2,21 +2,40 @@
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="web-lab3" default="run-all">
     <property file=".env"/>
 
-    <!-- Настройка директорий для тестов -->
+    <!-- Setup directories -->
+    <property name="src.dir" value="src/main/java"/>
+    <property name="web.dir" value="src/main/webapp"/>
+    <property name="build.dir" value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="dist.dir" value="dist"/>
+    <property name="javadoc.dir" value="${build.dir}/javadoc"/>
+    <property name="checksums.dir" value="${build.dir}/checksums"/>
+    <property name="jar.file" value="${dist.dir}/${ant.project.name}.jar"/>
+
+    <!-- Setup test directories -->
     <property name="test.src.dir" value="src/main/tests"/>
     <property name="test.build.dir" value="build/test-classes"/>
     <property name="test.reports.dir" value="build/test-reports"/>
 
-    <!-- 1. Настройка Ivy -->
+    <!-- Setup Ivy -->
     <property name="ivy.install.version" value="2.5.1"/>
     <property name="ivy.home" value="${user.home}/.ant"/>
     <property name="ivy.jar.dir" value="${ivy.home}/lib"/>
     <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
     <property name="lib.dir" value="lib"/>
 
+    <!-- Init directories -->
+    <target name="init">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${classes.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${javadoc.dir}"/>
+        <mkdir dir="${checksums.dir}"/>
+    </target> 
 
 
-    <!-- 2. Автозагрузка Ivy -->
+
+    <!-- Automatically download Ivy -->
     <target name="download-ivy" unless="offline">
         <mkdir dir="${ivy.jar.dir}"/>
         <get src="https://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
@@ -24,7 +43,7 @@
              skipexisting="true"/>
     </target>
 
-    <!-- 3. Инициализация Ivy -->
+    <!-- Init Ivy -->
     <target name="init-ivy" depends="download-ivy">
         <path id="ivy.lib.path">
             <pathelement location="${ivy.jar.file}"/>
@@ -34,16 +53,14 @@
                  classpathref="ivy.lib.path"/>
     </target>
 
-    <!-- 4. Загрузка зависимостей -->
+    <!-- Resolve dependencies -->
     <target name="resolve" depends="init-ivy">
         <ivy:resolve/>
         <ivy:retrieve pattern="${lib.dir}/[artifact]-[revision](-[classifier]).[ext]"/>
     </target>
 
-    <target name="hello">
-        <echo>Hello, World!</echo>
-    </target>
-
+    
+    <!-- Compile source -->
     <target name="compile" depends="resolve">
         <mkdir dir="build/classes"/>
         <javac destdir="build/classes" includeantruntime="false">
@@ -54,19 +71,21 @@
         </javac>
     </target>
 
-    <target name="build" depends="resolve">
+    <!-- Build project -->
+    <target name="build" depends="resolve, generate-javadoc">
         <antcall target="compile"/>
         <path id="cls.path">
             <fileset dir="lib" includes="**/*.jar"/>
             <pathelement location="build/classes/space/nerfthis/data"/>
         </path>
-        <jar destfile="build/${ant.project.name}.jar" basedir="build/classes/space/nerfthis/data">
+        <jar destfile="${build.dir}/${ant.project.name}.jar" basedir="build/classes/space/nerfthis/data" manifest="${build.dir}/MANIFEST.MF">
             <manifest>
                 <attribute name="Class-Path" value="${cls.path}"/>
             </manifest>
         </jar>
     </target>
 
+    <!-- Compile tests -->
     <target name="compile-tests" depends="compile">
         <mkdir dir="${test.build.dir}"/>
         <javac
@@ -80,6 +99,7 @@
         </javac>
     </target>
 
+    <!-- Run tests -->
     <target name="test" depends="compile-tests">
         <mkdir dir="build/test-reports"/>
         <junit printsummary="yes" haltonfailure="yes">
@@ -116,6 +136,14 @@ it should have been done through scp,
             <arg value="build/${ant.project.name}.jar"/>
             <arg value="${USER}@${SERVER}:~/path"/> <!-- change path -->
         </exec>
+    </target>
+
+    <target name="generate-javadoc" depends="compile">
+        <javadoc destdir="${javadoc.dir}" classpathref="lib.path">
+            <fileset dir="${src.dir}">
+                <include name="**/*.java"/>
+            </fileset>
+        </javadoc>
     </target>
 
     <target name="run-all" depends="build">
