@@ -1,233 +1,123 @@
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="web-lab3" default="run-all" basedir=".">
-    <property file=".env" />
+    <property file=".env"/>
     <!-- Setup directories -->
-    <property name="src.dir" value="src/main/java" />
-    <property name="web.dir" value="src/main/webapp" />
-    <property name="build.dir" value="build" />
-    <property name="classes.dir" value="${build.dir}/classes" />
-    <property name="javadoc.dir" value="${build.dir}/javadoc" />
-    <property name="checksums.dir" value="${build.dir}/checksums" />
-    <property name="jar.file" value="${dist.dir}/${ant.project.name}.jar" />
-    <property name="alt.src.dir" value="${build.dir}/alt-src" />
-    <property name="alt.jar.file" value="${build.dir}/${ant.project.name}-alt.jar" />
-    <property name="mapping.file" value="alt.properties" />
+    <property name="src.dir" value="src/main/java"/>
+    <property name="web.dir" value="src/main/webapp"/>
+    <property name="build.dir" value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="javadoc.dir" value="${build.dir}/javadoc"/>
+    <property name="checksums.dir" value="${build.dir}/checksums"/>
+    <property name="jar.file" value="${dist.dir}/${ant.project.name}.jar"/>
+    <property name="alt.src.dir" value="${build.dir}/alt-src"/>
+    <property name="alt.jar.file" value="${build.dir}/${ant.project.name}-alt.jar"/>
+    <property name="mapping.file" value="alt.properties"/>
 
-    <property name="manifest.file" value="${build.dir}/MANIFEST.MF" />
+    <property name="manifest.file" value="${build.dir}/MANIFEST.MF"/>
 
     <!-- Setup test directories -->
-    <property name="test.src.dir" value="src/main/tests" />
-    <property name="test.build.dir" value="build/test-classes" />
-    <property name="test.reports.dir" value="build/test-reports" />
+    <property name="test.src.dir" value="src/main/tests"/>
+    <property name="test.build.dir" value="build/test-classes"/>
+    <property name="test.reports.dir" value="build/test-reports"/>
 
 
     <!-- Setup Ivy -->
-    <property name="ivy.install.version" value="2.5.1" />
-    <property name="ivy.home" value="${user.home}/.ant" />
-    <property name="ivy.jar.dir" value="${ivy.home}/lib" />
-    <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
-    <property name="lib.dir" value="lib" />
+    <property name="ivy.install.version" value="2.5.1"/>
+    <property name="ivy.home" value="${user.home}/.ant"/>
+    <property name="ivy.jar.dir" value="${ivy.home}/lib"/>
+    <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
+    <property name="lib.dir" value="lib"/>
 
     <!-- Init directories -->
     <target name="init">
-        <mkdir dir="${build.dir}" />
-        <mkdir dir="${classes.dir}" />
-        <mkdir dir="${javadoc.dir}" />
-        <mkdir dir="${checksums.dir}" />
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${classes.dir}"/>
+        <mkdir dir="${javadoc.dir}"/>
+        <mkdir dir="${checksums.dir}"/>
     </target>
 
 
     <!-- Automatically download Ivy -->
     <target name="download-ivy" unless="offline">
-        <mkdir dir="${ivy.jar.dir}" />
+        <mkdir dir="${ivy.jar.dir}"/>
         <get
-            src="https://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
-            dest="${ivy.jar.file}"
-            skipexisting="true" />
+                src="https://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
+                dest="${ivy.jar.file}"
+                skipexisting="true"/>
     </target>
 
     <!-- Init Ivy -->
     <target name="init-ivy" depends="download-ivy">
         <path id="ivy.lib.path">
-            <pathelement location="${ivy.jar.file}" />
+            <pathelement location="${ivy.jar.file}"/>
         </path>
         <taskdef resource="org/apache/ivy/ant/antlib.xml"
-            uri="antlib:org.apache.ivy.ant"
-            classpathref="ivy.lib.path" />
+                 uri="antlib:org.apache.ivy.ant"
+                 classpathref="ivy.lib.path"/>
     </target>
-
-    <target name="doc" depends="compile">
-        <!-- Hash generation -->
-
-        <checksum algorithm="MD5" forceOverwrite="yes" todir="${checksums.dir}">
-            <fileset dir="${src.dir}">
-                <include name="**/*.java" />
-                <include name="**/*.xhtml" />
-            </fileset>
-        </checksum>
-
-
-        <checksum algorithm="SHA-1" forceOverwrite="yes" todir="${checksums.dir}">
-            <fileset dir="${src.dir}">
-                <include name="**/*.java" />
-                <include name="**/*.xhtml" />
-            </fileset>
-        </checksum>
-
-
-        <!-- Javadoc generation -->
-        <javadoc destdir="${javadoc.dir}" failonerror="false">
-            <classpath>
-                <fileset dir="${lib.dir}" includes="**/*.jar" />
-            </classpath>
-            <fileset dir="${src.dir}">
-                <include name="**/*.java" />
-            </fileset>
-        </javadoc>
-
-        <!-- Creating manifest file with hashes -->
-        <manifest file="${manifest.file}">
-            <attribute name="Generated-By" value="Apache Ant" />
-            <attribute name="Checksums" value="${checksums.dir}" />
-        </manifest>
-
-        <!-- Build doc -->
-        <zip destfile="${javadoc.dir}/project-docs.zip">
-            <fileset dir="${javadoc.dir}" />
-            <fileset dir="${checksums.dir}" />
-        </zip>
-    </target>
-
-    <target name="env" depends="init">
-        <echo message="Using Java from: ${JAVA_HOME}" />
-        <echo message="Using JVM args: ${JVM_ARGS}" />
-        <java fork="true"
-            jar="${build.dir}/${ant.project.name}.jar"
-            jvm="${current.java.home}/bin/java">
-            <jvmarg line="${jvm.args}" />
-        </java>
-    </target>
-
-    <target name="xml">
-        <echo message="Validating XML files..." />
-
-        <xmlvalidate
-            lenient="false"
-            failonerror="false"
-            warn="true">
-
-            <fileset dir="${basedir}">
-                <include name="**/*.xml" />
-                <exclude name="build/**" />
-            </fileset>
-        </xmlvalidate>
-
-        <echo message="XML validation completed successfully!" />
-    </target>
-
-    <!--Alt
-    build -->
-    <target name="alt" depends="resolve">
-        <mkdir dir="${alt.src.dir}" />
-        <mkdir dir="${classes.dir}-alt" />
-
-        <copy todir="${alt.src.dir}">
-            <fileset dir="${src.dir}">
-                <include name="**/*.java" />
-            </fileset>
-        </copy>
-
-        <replaceregexp match="DataBaseBean" replace="DBBean" byline="true">
-            <fileset dir="${alt.src.dir}">
-                <include name="**/*.java" />
-            </fileset>
-        </replaceregexp>
-        <move file="${alt.src.dir}/space/nerfthis/data/DataBaseBean.java"
-            tofile="${alt.src.dir}/space/nerfthis/data/DBBean.java" />
-
-        <javac
-            srcdir="${alt.src.dir}"
-            destdir="${classes.dir}-alt"
-            fork="true"
-            includeantruntime="false">
-            <classpath>
-                <fileset dir="${lib.dir}" includes="**/*.jar" />
-            </classpath>
-        </javac>
-
-        <jar destfile="${alt.jar.file}" basedir="${classes.dir}-alt">
-            <manifest>
-                <attribute name="Generated-By" value="Apache Ant - alt version" />
-            </manifest>
-        </jar>
-
-        <echo message="Alternative jar: ${alt.jar.file}" />
-    </target>
-
 
     <!-- Resolve dependencies -->
     <target name="resolve" depends="init-ivy, init">
-        <ivy:resolve />
-        <ivy:retrieve pattern="${lib.dir}/[artifact]-[revision](-[classifier]).[ext]" />
+        <ivy:resolve/>
+        <ivy:retrieve pattern="${lib.dir}/[artifact]-[revision](-[classifier]).[ext]"/>
     </target>
-
 
     <!-- Compile source -->
     <target name="compile" depends="resolve">
-        <mkdir dir="build/classes" />
+        <mkdir dir="build/classes"/>
         <javac destdir="build/classes" includeantruntime="false">
-            <src path="src" />
+            <src path="src"/>
             <classpath>
-                <fileset dir="${lib.dir}" includes="**/*.jar" />
+                <fileset dir="${lib.dir}" includes="**/*.jar"/>
             </classpath>
         </javac>
     </target>
 
     <!-- Build project -->
     <target name="build" depends="resolve, doc, xml">
-        <antcall target="compile" />
+        <antcall target="compile"/>
         <path id="cls.path">
-            <fileset dir="lib" includes="**/*.jar" />
-            <pathelement location="build/classes/space/nerfthis/data" />
+            <fileset dir="lib" includes="**/*.jar"/>
+            <pathelement location="build/classes/space/nerfthis/data"/>
         </path>
         <jar destfile="${build.dir}/${ant.project.name}.jar"
-            basedir="build/classes/space/nerfthis/data" manifest="${build.dir}/MANIFEST.MF">
-            <zipfileset dir="${checksums.dir}" prefix="META-INF/checksums" />
-            <zipfileset dir="${javadoc.dir}" prefix="docs" />
+             basedir="build/classes/space/nerfthis/data" manifest="${build.dir}/MANIFEST.MF">
+            <zipfileset dir="${checksums.dir}" prefix="META-INF/checksums"/>
+            <zipfileset dir="${javadoc.dir}" prefix="docs"/>
             <manifest>
-                <attribute name="Class-Path" value="${cls.path}" />
+                <attribute name="Class-Path" value="${cls.path}"/>
             </manifest>
         </jar>
     </target>
 
     <!-- Compile tests -->
     <target name="compile-tests" depends="compile">
-        <mkdir dir="${test.build.dir}" />
+        <mkdir dir="${test.build.dir}"/>
 
         <javac
-            srcdir="${test.src.dir}"
-            destdir="${test.build.dir}"
-            includeantruntime="false">
+                srcdir="${test.src.dir}"
+                destdir="${test.build.dir}"
+                includeantruntime="false">
             <classpath>
-                <fileset dir="${lib.dir}" includes="**/*.jar" />
-                <pathelement path="build/classes" />
+                <fileset dir="${lib.dir}" includes="**/*.jar"/>
+                <pathelement path="build/classes"/>
             </classpath>
         </javac>
     </target>
 
     <!-- Run tests and generate XML report -->
     <target name="test" depends="compile-tests">
-        <mkdir dir="test-reports" />
+        <mkdir dir="test-reports"/>
         <junit printsummary="yes" haltonfailure="yes">
             <classpath>
-                <pathelement path="${test.build.dir}" />
-                <pathelement path="build/classes" />
-                <fileset dir="${lib.dir}" includes="**/*.jar" />
+                <pathelement path="${test.build.dir}"/>
+                <pathelement path="build/classes"/>
+                <fileset dir="${lib.dir}" includes="**/*.jar"/>
             </classpath>
             <!-- Generate both plain and XML reports -->
-            <formatter type="plain" />
-            <formatter type="xml" />
+            <formatter type="plain"/>
+            <formatter type="xml"/>
             <test name="space.nerfthis.data.GeometryValidatorTest"
-                  todir="test-reports" />
+                  todir="test-reports"/>
         </junit>
     </target>
 
@@ -246,28 +136,131 @@ it should have been done through scp,
 
     <target name="scp" depends="build">
         <exec executable="sshpass">
-            <arg value="-p${PASSWORD}" />
-            <arg value="scp" />
-            <arg value="-P" />
-            <arg value="${PORT}" />
-            <arg value="build/${ant.project.name}.jar" />
-            <arg value="${USER}@${SERVER}:~/path" /> <!-- change path -->
+            <arg value="-p${PASSWORD}"/>
+            <arg value="scp"/>
+            <arg value="-P"/>
+            <arg value="${PORT}"/>
+            <arg value="build/${ant.project.name}.jar"/>
+            <arg value="${USER}@${SERVER}:~/path"/> <!-- change path -->
         </exec>
+    </target>
+
+    <target name="doc" depends="compile">
+        <!-- Hash generation -->
+        <checksum algorithm="MD5" forceOverwrite="yes" todir="${checksums.dir}">
+            <fileset dir="${src.dir}">
+                <include name="**/*.java"/>
+                <include name="**/*.xhtml"/>
+            </fileset>
+        </checksum>
+
+        <checksum algorithm="SHA-1" forceOverwrite="yes" todir="${checksums.dir}">
+            <fileset dir="${src.dir}">
+                <include name="**/*.java"/>
+                <include name="**/*.xhtml"/>
+            </fileset>
+        </checksum>
+
+        <!-- Javadoc generation -->
+        <javadoc destdir="${javadoc.dir}" failonerror="false">
+            <classpath>
+                <fileset dir="${lib.dir}" includes="**/*.jar"/>
+            </classpath>
+            <fileset dir="${src.dir}">
+                <include name="**/*.java"/>
+            </fileset>
+        </javadoc>
+
+        <!-- Creating manifest file with hashes -->
+        <manifest file="${manifest.file}">
+            <attribute name="Generated-By" value="Apache Ant"/>
+            <attribute name="Checksums" value="${checksums.dir}"/>
+        </manifest>
+
+        <!-- Build doc -->
+        <zip destfile="${javadoc.dir}/project-docs.zip">
+            <fileset dir="${javadoc.dir}"/>
+            <fileset dir="${checksums.dir}"/>
+        </zip>
+    </target>
+
+    <target name="env" depends="init">
+        <echo message="Using Java from: ${JAVA_HOME}"/>
+        <echo message="Using JVM args: ${JVM_ARGS}"/>
+        <java fork="true"
+              jar="${build.dir}/${ant.project.name}.jar"
+              jvm="${current.java.home}/bin/java">
+            <jvmarg line="${jvm.args}"/>
+        </java>
+    </target>
+
+    <target name="xml">
+        <echo message="Validating XML files..."/>
+        <xmlvalidate
+                lenient="false"
+                failonerror="false"
+                warn="true">
+            <fileset dir="${basedir}">
+                <include name="**/*.xml"/>
+                <exclude name="build/**"/>
+            </fileset>
+        </xmlvalidate>
+
+        <echo message="XML validation completed successfully!"/>
+    </target>
+
+    <!--Alt
+    build -->
+    <target name="alt" depends="resolve">
+        <mkdir dir="${alt.src.dir}"/>
+        <mkdir dir="${classes.dir}-alt"/>
+
+        <copy todir="${alt.src.dir}">
+            <fileset dir="${src.dir}">
+                <include name="**/*.java"/>
+            </fileset>
+        </copy>
+
+        <replaceregexp match="DataBaseBean" replace="DBBean" byline="true">
+            <fileset dir="${alt.src.dir}">
+                <include name="**/*.java"/>
+            </fileset>
+        </replaceregexp>
+        <move file="${alt.src.dir}/space/nerfthis/data/DataBaseBean.java"
+              tofile="${alt.src.dir}/space/nerfthis/data/DBBean.java"/>
+
+        <javac
+                srcdir="${alt.src.dir}"
+                destdir="${classes.dir}-alt"
+                fork="true"
+                includeantruntime="false">
+            <classpath>
+                <fileset dir="${lib.dir}" includes="**/*.jar"/>
+            </classpath>
+        </javac>
+
+        <jar destfile="${alt.jar.file}" basedir="${classes.dir}-alt">
+            <manifest>
+                <attribute name="Generated-By" value="Apache Ant - alt version"/>
+            </manifest>
+        </jar>
+
+        <echo message="Alternative jar: ${alt.jar.file}"/>
     </target>
 
     <target name="report" depends="test">
         <!-- Add all XML reports to Git -->
         <mkdir dir="reports"/>
         <apply executable="git" parallel="false">
-            <arg value="add" />
-            <fileset dir="test-reports" includes="**/*.xml" />
+            <arg value="add"/>
+            <fileset dir="test-reports" includes="**/*.xml"/>
         </apply>
 
         <!-- Commit with message -->
         <exec executable="git" failonerror="true">
-            <arg value="commit" />
-            <arg value="-m" />
-            <arg value="Add JUnit test report" />
+            <arg value="commit"/>
+            <arg value="-m"/>
+            <arg value="Add JUnit test report"/>
         </exec>
     </target>
 
@@ -276,7 +269,7 @@ it should have been done through scp,
     </target>
 
     <target name="clean">
-        <delete dir="build" />
+        <delete dir="build"/>
         <delete dir="reports"/>
     </target>
 </project>
