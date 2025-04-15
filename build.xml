@@ -260,7 +260,7 @@ it should have been done through scp,
         <mkdir dir="reports"/>
         <apply executable="git" parallel="false">
             <arg value="add" />
-            <fileset dir="reports" includes="**/*.xml" />
+            <fileset dir="test-reports" includes="**/*.xml" />
         </apply>
 
         <!-- Commit with message -->
