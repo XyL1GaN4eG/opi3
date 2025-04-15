@@ -214,18 +214,20 @@
         </javac>
     </target>
 
-    <!-- Run tests -->
+    <!-- Run tests and generate XML report -->
     <target name="test" depends="compile-tests">
-        <mkdir dir="build/test-reports" />
+        <mkdir dir="test-reports" />
         <junit printsummary="yes" haltonfailure="yes">
             <classpath>
                 <pathelement path="${test.build.dir}" />
                 <pathelement path="build/classes" />
                 <fileset dir="${lib.dir}" includes="**/*.jar" />
             </classpath>
+            <!-- Generate both plain and XML reports -->
             <formatter type="plain" />
+            <formatter type="xml" />
             <test name="space.nerfthis.data.GeometryValidatorTest"
-                todir="build/test-reports" />
+                  todir="test-reports" />
         </junit>
     </target>
 
@@ -253,6 +255,21 @@ it should have been done through scp,
         </exec>
     </target>
 
+    <target name="report" depends="test">
+        <!-- Add all XML reports to Git -->
+        <mkdir dir="reports"/>
+        <apply executable="git" parallel="false">
+            <arg value="add" />
+            <fileset dir="reports" includes="**/*.xml" />
+        </apply>
+
+        <!-- Commit with message -->
+        <exec executable="git" failonerror="true">
+            <arg value="commit" />
+            <arg value="-m" />
+            <arg value="Add JUnit test report" />
+        </exec>
+    </target>
 
     <target name="run-all" depends="build">
         <echo>DONE</echo>
@@ -260,5 +277,6 @@ it should have been done through scp,
 
     <target name="clean">
         <delete dir="build" />
+        <delete dir="reports"/>
     </target>
 </project>
