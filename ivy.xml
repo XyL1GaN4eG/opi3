@@ -1,12 +1,13 @@
 <ivy-module version="2.0">
-    <info organisation="apache" module="hello-ivy"/>
+    <info organisation="apache" module="hello-ivy" />
     <dependencies>
-        <dependency org="javax" name="javaee-api" rev="8.0"/>
-        <dependency org="javax.faces" name="javax.faces-api" rev="2.3"/>
-        <dependency org="org.hibernate.orm" name="hibernate-core" rev="6.6.1.Final"/>
-        <dependency org="org.postgresql" name="postgresql" rev="42.7.3"/>
-        <dependency org="org.hibernate" name="hibernate-core" rev="5.6.14.Final"/>
-        <dependency org="org.hibernate" name="hibernate-entitymanager" rev="5.6.14.Final"/>
-        <dependency org="junit" name="junit" rev="4.13.2"/>
+        <dependency org="javax" name="javaee-api" rev="8.0" />
+        <dependency org="javax.faces" name="javax.faces-api" rev="2.3" />
+        <dependency org="org.hibernate.orm" name="hibernate-core" rev="6.6.1.Final" />
+        <dependency org="org.postgresql" name="postgresql" rev="42.7.3" />
+        <dependency org="org.hibernate" name="hibernate-core" rev="5.6.14.Final" />
+        <dependency org="org.hibernate" name="hibernate-entitymanager" rev="5.6.14.Final" />
+        <dependency org="junit" name="junit" rev="4.13.2" />
+        <dependency org="org.jboss.logging" name="jboss-logging-annotations" rev="2.2.1.Final" />
     </dependencies>
 </ivy-module>
