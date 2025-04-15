@@ -11,6 +11,7 @@
     <property name="alt.src.dir" value="${build.dir}/alt-src" />
     <property name="alt.jar.file" value="${build.dir}/${ant.project.name}-alt.jar" />
     <property name="mapping.file" value="alt.properties" />
+    <property name="reports.dir" value="reports" />
 
     <property name="manifest.file" value="${build.dir}/MANIFEST.MF" />
 
@@ -33,6 +34,7 @@
         <mkdir dir="${classes.dir}" />
         <mkdir dir="${javadoc.dir}" />
         <mkdir dir="${checksums.dir}" />
+        <mkdir dir="${reports.dir}" />
     </target>
 
 
