@@ -17,9 +17,9 @@ import org.hibernate.cfg.Configuration;
  * <p>Uses session scope (SessionScoped) to maintain state between user
  * requests. Hibernate configuration is loaded from hibernate.cfg.xml.</p>
  *
- * @ManagedBean annotation marks this class as a JSF managed bean with name
+ * ManagedBean annotation marks this class as a JSF managed bean with name
  * "dataBase".
- * @SessionScoped indicates the bean's lifecycle spans a user session.
+ * SessionScoped indicates the bean's lifecycle spans a user session.
  */
 
 @ManagedBean(name = "dataBase", eager = true)
