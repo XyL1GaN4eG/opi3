@@ -1,8 +1,5 @@
-<?xml version="1.0"?>
-
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="web-lab3" default="run-all" basedir=".">
     <property file=".env" />
-
     <!-- Setup directories -->
     <property name="src.dir" value="src/main/java" />
     <property name="web.dir" value="src/main/webapp" />
@@ -12,13 +9,13 @@
     <property name="checksums.dir" value="${build.dir}/checksums" />
     <property name="jar.file" value="${dist.dir}/${ant.project.name}.jar" />
 
-
     <property name="manifest.file" value="${build.dir}/MANIFEST.MF" />
 
     <!-- Setup test directories -->
     <property name="test.src.dir" value="src/main/tests" />
     <property name="test.build.dir" value="build/test-classes" />
     <property name="test.reports.dir" value="build/test-reports" />
+
 
     <!-- Setup Ivy -->
     <property name="ivy.install.version" value="2.5.1" />
@@ -97,6 +94,16 @@
         </zip>
     </target>
 
+    <target name="env" depends="init">
+        <echo message="Using Java from: ${JAVA_HOME}" />
+        <echo message="Using JVM args: ${JVM_ARGS}" />
+        <java fork="true"
+            jar="${build.dir}/${ant.project.name}.jar"
+            jvm="${current.java.home}/bin/java">
+            <jvmarg line="${jvm.args}" />
+        </java>
+    </target>
+
     <target name="xml">
         <echo message="Validating XML files..." />
 
@@ -115,14 +122,6 @@
     </target>
 
 
-    <target name="set-env">
-        <propertycopy name="current.java.home" from="java.${java.version}.home" />
-        <propertycopy name="current.jvm.args" from="jvm.${java.version}.args" />
-
-        <echo message="Using Java: ${current.java.home}" />
-        <echo message="JVM args: ${current.jvm.args}" />
-    </target>
-
     <target name="compile">
         <javac
             srcdir="src"
@@ -131,6 +130,7 @@
             executable="${current.java.home}/bin/javac"
             includeantruntime="false" />
     </target>
+
 
     <!-- Resolve dependencies -->
     <target name="resolve" depends="init-ivy, init">
@@ -151,7 +151,7 @@
     </target>
 
     <!-- Build project -->
-    <target name="build" depends="resolve, doc">
+    <target name="build" depends="resolve, doc, xml">
         <antcall target="compile" />
         <path id="cls.path">
             <fileset dir="lib" includes="**/*.jar" />
@@ -170,6 +170,7 @@
     <!-- Compile tests -->
     <target name="compile-tests" depends="compile">
         <mkdir dir="${test.build.dir}" />
+
         <javac
             srcdir="${test.src.dir}"
             destdir="${test.build.dir}"
