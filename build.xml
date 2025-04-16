@@ -57,9 +57,98 @@
             classpathref="ivy.lib.path" />
     </target>
 
+    <!-- Resolve dependencies -->
+    <target name="resolve" depends="init-ivy, init">
+        <ivy:resolve />
+        <ivy:retrieve pattern="${lib.dir}/[artifact]-[revision](-[classifier]).[ext]" />
+    </target>
+
+    <!-- Compile source -->
+    <target name="compile" depends="resolve">
+        <mkdir dir="build/classes" />
+        <javac destdir="build/classes" includeantruntime="false">
+            <src path="src" />
+            <classpath>
+                <fileset dir="${lib.dir}" includes="**/*.jar" />
+            </classpath>
+        </javac>
+    </target>
+
+    <!-- Build project -->
+    <target name="build" depends="resolve, doc, xml">
+        <antcall target="compile" />
+        <path id="cls.path">
+            <fileset dir="lib" includes="**/*.jar" />
+            <pathelement location="build/classes/space/nerfthis/data" />
+        </path>
+        <jar destfile="${build.dir}/${ant.project.name}.jar"
+            basedir="build/classes/space/nerfthis/data" manifest="${build.dir}/MANIFEST.MF">
+            <zipfileset dir="${checksums.dir}" prefix="META-INF/checksums" />
+            <zipfileset dir="${javadoc.dir}" prefix="docs" />
+            <manifest>
+                <attribute name="Class-Path" value="${cls.path}" />
+            </manifest>
+        </jar>
+    </target>
+
+    <!-- Compile tests -->
+    <target name="compile-tests" depends="compile">
+        <mkdir dir="${test.build.dir}" />
+
+        <javac
+            srcdir="${test.src.dir}"
+            destdir="${test.build.dir}"
+            includeantruntime="false">
+            <classpath>
+                <fileset dir="${lib.dir}" includes="**/*.jar" />
+                <pathelement path="build/classes" />
+            </classpath>
+        </javac>
+    </target>
+
+    <!-- Run tests and generate XML report -->
+    <target name="test" depends="compile-tests">
+        <mkdir dir="test-reports" />
+        <junit printsummary="yes" haltonfailure="yes">
+            <classpath>
+                <pathelement path="${test.build.dir}" />
+                <pathelement path="build/classes" />
+                <fileset dir="${lib.dir}" includes="**/*.jar" />
+            </classpath>
+            <!-- Generate both plain and XML reports -->
+            <formatter type="plain" />
+            <formatter type="xml" />
+            <test name="space.nerfthis.data.GeometryValidatorTest"
+                todir="test-reports" />
+        </junit>
+    </target>
+
+    <!--    according to the terms of reference,
+it should have been done through scp,
+ but scp does not accept a password,
+ so let this target be implemented through sshpass for now-->
+    <!--    <target name="scp" depends="build">-->
+    <!--        <exec executable="scp">-->
+    <!--            <arg value="-P"/>-->
+    <!--            <arg value="${PORT}"/>-->
+    <!--            <arg value="build/${ant.project.name}.jar"/>-->
+    <!--            <arg value="${USER}@${SERVER}:lol"/>-->
+    <!--        </exec>-->
+    <!--    </target>-->
+
+    <target name="scp" depends="build">
+        <exec executable="sshpass">
+            <arg value="-p${PASSWORD}" />
+            <arg value="scp" />
+            <arg value="-P" />
+            <arg value="${PORT}" />
+            <arg value="build/${ant.project.name}.jar" />
+            <arg value="${USER}@${SERVER}:~/path" /> <!-- change path -->
+        </exec>
+    </target>
+
     <target name="doc" depends="compile">
         <!-- Hash generation -->
-
         <checksum algorithm="MD5" forceOverwrite="yes" todir="${checksums.dir}">
             <fileset dir="${src.dir}">
                 <include name="**/*.java" />
@@ -67,14 +156,12 @@
             </fileset>
         </checksum>
 
-
         <checksum algorithm="SHA-1" forceOverwrite="yes" todir="${checksums.dir}">
             <fileset dir="${src.dir}">
                 <include name="**/*.java" />
                 <include name="**/*.xhtml" />
             </fileset>
         </checksum>
-
 
         <!-- Javadoc generation -->
         <javadoc destdir="${javadoc.dir}" failonerror="false">
@@ -93,7 +180,7 @@
         </manifest>
 
         <!-- Build doc -->
-        <zip destfile="${javadoc.dir}/project-docs.zip">
+        <zip destfile="${build.dir}/project-docs.zip" update="true">
             <fileset dir="${javadoc.dir}" />
             <fileset dir="${checksums.dir}" />
         </zip>
@@ -111,12 +198,10 @@
 
     <target name="xml">
         <echo message="Validating XML files..." />
-
         <xmlvalidate
             lenient="false"
             failonerror="false"
             warn="true">
-
             <fileset dir="${basedir}">
                 <include name="**/*.xml" />
                 <exclude name="build/**" />
@@ -165,96 +250,21 @@
         <echo message="Alternative jar: ${alt.jar.file}" />
     </target>
 
+    <target name="report" depends="test">
+        <!-- Add all XML reports to Git -->
+        <mkdir dir="reports" />
+        <apply executable="git" parallel="false">
+            <arg value="add" />
+            <fileset dir="test-reports" includes="**/*.xml" />
+        </apply>
 
-    <!-- Resolve dependencies -->
-    <target name="resolve" depends="init-ivy, init">
-        <ivy:resolve />
-        <ivy:retrieve pattern="${lib.dir}/[artifact]-[revision](-[classifier]).[ext]" />
-    </target>
-
-
-    <!-- Compile source -->
-    <target name="compile" depends="resolve">
-        <mkdir dir="build/classes" />
-        <javac destdir="build/classes" includeantruntime="false">
-            <src path="src" />
-            <classpath>
-                <fileset dir="${lib.dir}" includes="**/*.jar" />
-            </classpath>
-        </javac>
-    </target>
-
-    <!-- Build project -->
-    <target name="build" depends="resolve, doc, xml">
-        <antcall target="compile" />
-        <path id="cls.path">
-            <fileset dir="lib" includes="**/*.jar" />
-            <pathelement location="build/classes/space/nerfthis/data" />
-        </path>
-        <jar destfile="${build.dir}/${ant.project.name}.jar"
-            basedir="build/classes/space/nerfthis/data" manifest="${build.dir}/MANIFEST.MF">
-            <zipfileset dir="${checksums.dir}" prefix="META-INF/checksums" />
-            <zipfileset dir="${javadoc.dir}" prefix="docs" />
-            <manifest>
-                <attribute name="Class-Path" value="${cls.path}" />
-            </manifest>
-        </jar>
-    </target>
-
-    <!-- Compile tests -->
-    <target name="compile-tests" depends="compile">
-        <mkdir dir="${test.build.dir}" />
-
-        <javac
-            srcdir="${test.src.dir}"
-            destdir="${test.build.dir}"
-            includeantruntime="false">
-            <classpath>
-                <fileset dir="${lib.dir}" includes="**/*.jar" />
-                <pathelement path="build/classes" />
-            </classpath>
-        </javac>
-    </target>
-
-    <!-- Run tests -->
-    <target name="test" depends="compile-tests">
-        <mkdir dir="build/test-reports" />
-        <junit printsummary="yes" haltonfailure="yes">
-            <classpath>
-                <pathelement path="${test.build.dir}" />
-                <pathelement path="build/classes" />
-                <fileset dir="${lib.dir}" includes="**/*.jar" />
-            </classpath>
-            <formatter type="plain" />
-            <test name="space.nerfthis.data.GeometryValidatorTest"
-                todir="build/test-reports" />
-        </junit>
-    </target>
-
-    <!--    according to the terms of reference,
-it should have been done through scp,
- but scp does not accept a password,
- so let this target be implemented through sshpass for now-->
-    <!--    <target name="scp" depends="build">-->
-    <!--        <exec executable="scp">-->
-    <!--            <arg value="-P"/>-->
-    <!--            <arg value="${PORT}"/>-->
-    <!--            <arg value="build/${ant.project.name}.jar"/>-->
-    <!--            <arg value="${USER}@${SERVER}:lol"/>-->
-    <!--        </exec>-->
-    <!--    </target>-->
-
-    <target name="scp" depends="build">
-        <exec executable="sshpass">
-            <arg value="-p${PASSWORD}" />
-            <arg value="scp" />
-            <arg value="-P" />
-            <arg value="${PORT}" />
-            <arg value="build/${ant.project.name}.jar" />
-            <arg value="${USER}@${SERVER}:~/path" /> <!-- change path -->
+        <!-- Commit with message -->
+        <exec executable="git" failonerror="true">
+            <arg value="commit" />
+            <arg value="-m" />
+            <arg value="Add JUnit test report" />
         </exec>
     </target>
-
 
     <target name="run-all" depends="build">
         <echo>DONE</echo>
@@ -262,5 +272,7 @@ it should have been done through scp,
 
     <target name="clean">
         <delete dir="build" />
+        <delete dir="reports" />
+        <delete dir="space" />
     </target>
 </project>

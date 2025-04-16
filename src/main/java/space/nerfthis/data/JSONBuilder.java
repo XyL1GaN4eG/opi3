@@ -19,7 +19,7 @@ public class JSONBuilder {
 
   /**
    * Converts a list of Point objects to a JSON array string.
-   * <p>
+   *
    * Formats numeric values with the following precision:
    * <ul>
    *   <li>X/Y coordinates: 10 decimal places</li>
@@ -27,7 +27,7 @@ public class JSONBuilder {
    *   <li>Flag: boolean literal</li>
    * </ul>
    * Uses US locale formatting to ensure consistent decimal representation.
-   * </p>
+   *
    *
    * @param dataList List of Point objects to serialize (non-null)
    * @return JSON array string in the format:
