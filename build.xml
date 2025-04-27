@@ -3,6 +3,7 @@
     <!-- Setup directories -->
     <property name="src.dir" value="src/main/java"/>
     <property name="web.dir" value="src/main/webapp"/>
+
     <property name="build.dir" value="build"/>
 
     <property name="build.file" value="${build.dir}/${ant.project.name}"/>
@@ -17,7 +18,6 @@
     <property name="classes.dir" value="${build.dir}/classes"/>
     <property name="javadoc.dir" value="${build.dir}/javadoc"/>
     <property name="checksums.dir" value="${build.dir}/checksums"/>
-    <property name="jar.file" value="${dist.dir}/${ant.project.name}.jar"/>
     <property name="alt.src.dir" value="${build.dir}/alt-src"/>
     <property name="alt.jar.file" value="${build.dir}/${ant.project.name}-alt.jar"/>
     <property name="mapping.file" value="alt.properties"/>
@@ -36,7 +36,6 @@
     <property name="ivy.jar.dir" value="${ivy.home}/lib"/>
     <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
     <property name="lib.dir" value="lib"/>
-
     <!-- Init directories -->
     <target name="init">
         <mkdir dir="${build.dir}"/>
@@ -44,8 +43,6 @@
         <mkdir dir="${javadoc.dir}"/>
         <mkdir dir="${checksums.dir}"/>
     </target>
-
-
     <!-- Automatically download Ivy -->
     <target name="download-ivy" unless="offline">
         <mkdir dir="${ivy.jar.dir}"/>
@@ -54,7 +51,6 @@
             dest="${ivy.jar.file}"
             skipexisting="true"/>
     </target>
-
     <!-- Init Ivy -->
     <target name="init-ivy" depends="download-ivy">
         <path id="ivy.lib.path">
@@ -64,7 +60,6 @@
                  uri="antlib:org.apache.ivy.ant"
                  classpathref="ivy.lib.path"/>
     </target>
-
     <!-- Resolve dependencies -->
     <target name="resolve" depends="init-ivy, init">
         <ivy:resolve/>
