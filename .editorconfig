@@ -1,5 +1,4 @@
-# Унифицированный .editorconfig для XML
-[*.{ant,fxml,jhm,jnlp,jrxml,pom,rng,tld,wadl,wsdd,wsdl,xjb,xml,xsd,xsl,xslt,xul}]
+[*.xml]
 indent_style = space # Использовать пробелы для отступов
 indent_size = 4 # Размер отступа (4 пробела)
 charset = utf-8 # Кодировка
