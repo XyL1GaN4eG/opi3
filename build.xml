@@ -284,5 +284,6 @@
         <delete dir="build"/>
         <delete dir="reports"/>
         <delete dir="space"/>
+        <delete dir="test-reports"/>
     </target>
 </project>
