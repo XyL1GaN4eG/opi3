@@ -4,6 +4,16 @@
     <property name="src.dir" value="src/main/java"/>
     <property name="web.dir" value="src/main/webapp"/>
     <property name="build.dir" value="build"/>
+
+    <property name="build.file" value="${build.dir}/${ant.project.name}"/>
+    <property name="jar.file" value="${build.file}.jar"/>
+
+    <property name="war.file" value="${build.file}.war"/>
+    <property name="web.inf" value="${web.dir}/WEB-INF"/>
+    <property name="web.xml" value="${web.inf}/web.xml"/>
+
+
+
     <property name="classes.dir" value="${build.dir}/classes"/>
     <property name="javadoc.dir" value="${build.dir}/javadoc"/>
     <property name="checksums.dir" value="${build.dir}/checksums"/>
@@ -72,6 +82,26 @@
         </javac>
     </target>
 
+    <target name="war" depends="compile">
+        <war
+            destfile="${war.file}"
+            webxml="${web.xml}">
+
+            <fileset dir="${web.dir}">
+                <include name="**/*.*"/>
+            </fileset>
+
+            <classes dir="${classes.dir}"/>
+
+            <lib dir="${lib.dir}"/>
+
+            <webinf dir="${web.inf}">
+                <include name="**/*.xml"/>
+                <include name="**/*.properties"/>
+            </webinf>
+        </war>
+    </target>
+
     <!-- Build project -->
     <target name="build" depends="resolve, doc, xml">
         <antcall target="compile"/>
@@ -127,7 +157,7 @@
             <arg value="scp"/>
             <arg value="-P"/>
             <arg value="${PORT}"/>
-            <arg value="build/${ant.project.name}.jar"/>
+            <arg value="${war.file}"/>
             <arg value="${USER}@${SERVER}:~/path"/> <!-- change path -->
         </exec>
     </target>
