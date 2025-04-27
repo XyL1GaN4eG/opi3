@@ -20,15 +20,14 @@
     <property name="checksums.dir" value="${build.dir}/checksums"/>
     <property name="alt.src.dir" value="${build.dir}/alt-src"/>
     <property name="alt.jar.file" value="${build.dir}/${ant.project.name}-alt.jar"/>
-    <property name="mapping.file" value="alt.properties"/>
+    <property name="mapping.file" value="alt.properties"/> <!--unused property-->
 
     <property name="manifest.file" value="${build.dir}/MANIFEST.MF"/>
 
     <!-- Setup test directories -->
     <property name="test.src.dir" value="src/main/tests"/>
     <property name="test.build.dir" value="build/test-classes"/>
-    <property name="test.reports.dir" value="build/test-reports"/>
-
+    <property name="test.reports.dir" value="build/test-reports"/> <!--unused property-->
 
     <!-- Setup Ivy -->
     <property name="ivy.install.version" value="2.5.1"/>
