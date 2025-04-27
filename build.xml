@@ -3,17 +3,13 @@
     <!-- Setup directories -->
     <property name="src.dir" value="src/main/java"/>
     <property name="web.dir" value="src/main/webapp"/>
-
     <property name="build.dir" value="build"/>
-
     <property name="build.file" value="${build.dir}/${ant.project.name}"/>
     <property name="jar.file" value="${build.file}.jar"/>
-
     <property name="war.file" value="${build.file}.war"/>
+
     <property name="web.inf" value="${web.dir}/WEB-INF"/>
     <property name="web.xml" value="${web.inf}/web.xml"/>
-
-
 
     <property name="classes.dir" value="${build.dir}/classes"/>
     <property name="javadoc.dir" value="${build.dir}/javadoc"/>
@@ -21,7 +17,6 @@
     <property name="alt.src.dir" value="${build.dir}/alt-src"/>
     <property name="alt.jar.file" value="${build.dir}/${ant.project.name}-alt.jar"/>
     <property name="mapping.file" value="alt.properties"/> <!--unused property-->
-
     <property name="manifest.file" value="${build.dir}/MANIFEST.MF"/>
 
     <!-- Setup test directories -->
@@ -103,7 +98,7 @@
             <fileset dir="lib" includes="**/*.jar"/>
             <pathelement location="build/classes/space/nerfthis/data"/>
         </path>
-        <jar destfile="${build.dir}/${ant.project.name}.jar"
+        <jar destfile="${jar.file}"
              basedir="build/classes/space/nerfthis/data" manifest="${build.dir}/MANIFEST.MF">
             <zipfileset dir="${checksums.dir}" prefix="META-INF/checksums"/>
             <zipfileset dir="${javadoc.dir}" prefix="docs"/>
@@ -220,8 +215,7 @@
         <echo message="XML validation completed successfully!"/>
     </target>
 
-    <!--Alt
-    build -->
+    <!--Alt build -->
     <target name="alt" depends="resolve">
         <mkdir dir="${alt.src.dir}"/>
         <mkdir dir="${classes.dir}-alt"/>
