@@ -140,14 +140,14 @@
         </junit>
     </target>
 
-    <target name="scp" depends="build">
+    <target name="scp" depends="war">
         <exec executable="sshpass">
             <arg value="-p${PASSWORD}"/>
             <arg value="scp"/>
             <arg value="-P"/>
             <arg value="${PORT}"/>
             <arg value="${war.file}"/>
-            <arg value="${USER}@${SERVER}:~/path"/> <!-- change path -->
+            <arg value="${USER}@${SERVER}:~/${PATH_ON_SERVER}"/>
         </exec>
     </target>
 
